@@ -392,26 +392,26 @@ class EntanglerCore(Module):
                     io_IO=pad.p, io_IOB=pad.n)
 
             # Interface between master and slave core.
+            if core_link_pads is not None:
+                # Slave -> master:
+                ts_buf(core_link_pads[0],
+                    self.msm.ready, self.msm.slave_ready_raw,
+                    ~self.msm.is_master & ~self.msm.standalone)
 
-            # Slave -> master:
-            ts_buf(core_link_pads[0],
-                self.msm.ready, self.msm.slave_ready_raw,
-                ~self.msm.is_master & ~self.msm.standalone)
+                ts_buf(core_link_pads[4],
+                    local_422ps_out, slave_422ps_raw,
+                    ~self.msm.is_master)
 
-            ts_buf(core_link_pads[4],
-                local_422ps_out, slave_422ps_raw,
-                ~self.msm.is_master)
-
-            # Master -> slave:
-            ts_buf(core_link_pads[1],
-                self.msm.trigger_out, self.msm.trigger_in_raw,
-                self.msm.is_master)
-            ts_buf(core_link_pads[2],
-                self.msm.success, self.msm.success_in_raw,
-                self.msm.is_master)
-            ts_buf(core_link_pads[3],
-                self.msm.timeout, self.msm.timeout_in_raw,
-                self.msm.is_master)
+                # Master -> slave:
+                ts_buf(core_link_pads[1],
+                    self.msm.trigger_out, self.msm.trigger_in_raw,
+                    self.msm.is_master)
+                ts_buf(core_link_pads[2],
+                    self.msm.success, self.msm.success_in_raw,
+                    self.msm.is_master)
+                ts_buf(core_link_pads[3],
+                    self.msm.timeout, self.msm.timeout_in_raw,
+                    self.msm.is_master)
 
         # Connect heralder inputs.
         self.comb += self.heralder.sig.eq(Cat(*(g.triggered for g in self.apd_gaters)))
@@ -444,3 +444,4 @@ class EntanglerCore(Module):
                 c.reset.eq(self.msm.run_stb),
                 c.read_stb.eq(self.msm.cycle_ending),
             ]
+            
